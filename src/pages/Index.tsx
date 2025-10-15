@@ -38,6 +38,20 @@ const Index = () => {
 
   const gridSize = 10;
   const [exitPos] = useState({ x: Math.floor(gridSize / 2), y: gridSize - 1 });
+  
+  const obstacles = [
+    { x: 3, y: 2 }, { x: 4, y: 2 },
+    { x: 6, y: 3 }, { x: 7, y: 3 },
+    { x: 2, y: 4 }, { x: 3, y: 4 },
+    { x: 5, y: 5 }, { x: 6, y: 5 },
+    { x: 8, y: 5 },
+    { x: 2, y: 6 }, { x: 3, y: 6 },
+    { x: 7, y: 7 }, { x: 8, y: 7 },
+    { x: 4, y: 8 }, { x: 5, y: 8 }
+  ];
+  
+  const isObstacle = (x: number, y: number) => 
+    obstacles.some(obs => obs.x === x && obs.y === y);
 
   const movePlayer = (direction: 'up' | 'down' | 'left' | 'right') => {
     let newX = playerPos.x;
@@ -56,6 +70,11 @@ const Index = () => {
       case 'right':
         newX = Math.min(gridSize - 1, playerPos.x + 1);
         break;
+    }
+    
+    if (isObstacle(newX, newY)) {
+      playSound(150, 0.05, 'square');
+      return;
     }
 
     if (newX !== playerPos.x || newY !== playerPos.y) {
@@ -163,8 +182,20 @@ const Index = () => {
 
         if (Math.abs(dx) > Math.abs(dy)) {
           newX = prev.x + Math.sign(dx);
+          if (isObstacle(newX, prev.y)) {
+            newY = prev.y + Math.sign(dy);
+            newX = prev.x;
+          }
         } else {
           newY = prev.y + Math.sign(dy);
+          if (isObstacle(prev.x, newY)) {
+            newX = prev.x + Math.sign(dx);
+            newY = prev.y;
+          }
+        }
+        
+        if (isObstacle(newX, newY)) {
+          return prev;
         }
 
         if (newX === playerPos.x && newY === playerPos.y) {
@@ -230,6 +261,7 @@ const Index = () => {
               const isPlayer = x === playerPos.x && y === playerPos.y;
               const isSalt = x === saltPos.x && y === saltPos.y;
               const isExit = x === exitPos.x && y === exitPos.y;
+              const isObstacleCell = isObstacle(x, y);
               const isWall = (x === 0 || x === gridSize - 1 || y === 0 || y === gridSize - 1) && 
                             !(x === 1 && y === 1) && !isExit;
 
@@ -240,6 +272,7 @@ const Index = () => {
                     isPlayer ? 'bg-gradient-to-br from-gray-800 to-gray-900 animate-pulse-glow' :
                     isSalt ? 'bg-black animate-shake border-red-900' :
                     isExit ? 'bg-gradient-to-br from-green-950 to-green-900 border-green-800 animate-pulse-glow' :
+                    isObstacleCell ? 'bg-gray-900 border-gray-700' :
                     isWall ? 'bg-gray-950' :
                     'bg-black/80'
                   }`}
@@ -260,6 +293,9 @@ const Index = () => {
                   )}
                   {isExit && !isPlayer && (
                     <div className="text-3xl">🚻</div>
+                  )}
+                  {isObstacleCell && (
+                    <div className="text-2xl opacity-60">🗿</div>
                   )}
                 </div>
               );
