@@ -37,6 +37,47 @@ const Index = () => {
 
   const gridSize = 10;
 
+  const movePlayer = (direction: 'up' | 'down' | 'left' | 'right') => {
+    let newX = playerPos.x;
+    let newY = playerPos.y;
+
+    switch (direction) {
+      case 'up':
+        newY = Math.max(0, playerPos.y - 1);
+        break;
+      case 'down':
+        newY = Math.min(gridSize - 1, playerPos.y + 1);
+        break;
+      case 'left':
+        newX = Math.max(0, playerPos.x - 1);
+        break;
+      case 'right':
+        newX = Math.min(gridSize - 1, playerPos.x + 1);
+        break;
+    }
+
+    if (newX !== playerPos.x || newY !== playerPos.y) {
+      setPlayerPos({ x: newX, y: newY });
+      setScore(prev => prev + 10);
+      playSound(200, 0.05, 'square');
+      
+      const distance = Math.abs(newX - saltPos.x) + Math.abs(newY - saltPos.y);
+      if (distance < 3) {
+        setFear(prev => Math.min(100, prev + 10));
+        playSound(100, 0.3, 'sawtooth');
+        setScreenShake(true);
+        setTimeout(() => setScreenShake(false), 300);
+        toast({
+          title: '⚠️ СОЛЬ БЛИЗКО',
+          description: 'Беги, Лили!',
+          variant: 'destructive'
+        });
+      } else if (distance < 5) {
+        playSound(150, 0.1, 'triangle');
+      }
+    }
+  };
+
   const playSound = (frequency: number, duration: number, type: OscillatorType = 'sine') => {
     if (volume === 0) return;
     try {
@@ -70,47 +111,23 @@ const Index = () => {
     if (gameState !== 'playing') return;
 
     const handleKeyPress = (e: KeyboardEvent) => {
-      let newX = playerPos.x;
-      let newY = playerPos.y;
-
       switch (e.key) {
         case 'ArrowUp':
         case 'w':
-          newY = Math.max(0, playerPos.y - 1);
+          movePlayer('up');
           break;
         case 'ArrowDown':
         case 's':
-          newY = Math.min(gridSize - 1, playerPos.y + 1);
+          movePlayer('down');
           break;
         case 'ArrowLeft':
         case 'a':
-          newX = Math.max(0, playerPos.x - 1);
+          movePlayer('left');
           break;
         case 'ArrowRight':
         case 'd':
-          newX = Math.min(gridSize - 1, playerPos.x + 1);
+          movePlayer('right');
           break;
-      }
-
-      if (newX !== playerPos.x || newY !== playerPos.y) {
-        setPlayerPos({ x: newX, y: newY });
-        setScore(prev => prev + 10);
-        playSound(200, 0.05, 'square');
-        
-        const distance = Math.abs(newX - saltPos.x) + Math.abs(newY - saltPos.y);
-        if (distance < 3) {
-          setFear(prev => Math.min(100, prev + 10));
-          playSound(100, 0.3, 'sawtooth');
-          setScreenShake(true);
-          setTimeout(() => setScreenShake(false), 300);
-          toast({
-            title: '⚠️ СОЛЬ БЛИЗКО',
-            description: 'Беги, Лили!',
-            variant: 'destructive'
-          });
-        } else if (distance < 5) {
-          playSound(150, 0.1, 'triangle');
-        }
       }
     };
 
@@ -247,8 +264,47 @@ const Index = () => {
           </Button>
         </div>
 
-        <div className="text-center text-xs text-muted-foreground">
-          Используй WASD или стрелки для движения
+        <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto md:hidden">
+          <div></div>
+          <Button 
+            onClick={() => movePlayer('up')}
+            className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 h-16"
+            size="lg"
+          >
+            <Icon name="ChevronUp" size={32} />
+          </Button>
+          <div></div>
+          <Button 
+            onClick={() => movePlayer('left')}
+            className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 h-16"
+            size="lg"
+          >
+            <Icon name="ChevronLeft" size={32} />
+          </Button>
+          <div className="flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-gray-800 border-2 border-gray-700"></div>
+          </div>
+          <Button 
+            onClick={() => movePlayer('right')}
+            className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 h-16"
+            size="lg"
+          >
+            <Icon name="ChevronRight" size={32} />
+          </Button>
+          <div></div>
+          <Button 
+            onClick={() => movePlayer('down')}
+            className="bg-gray-900 hover:bg-gray-800 border-2 border-gray-700 h-16"
+            size="lg"
+          >
+            <Icon name="ChevronDown" size={32} />
+          </Button>
+          <div></div>
+        </div>
+
+        <div className="text-center text-xs text-gray-600">
+          <span className="hidden md:inline">Используй WASD или стрелки для движения</span>
+          <span className="md:hidden">Используй кнопки для управления</span>
         </div>
       </div>
     </div>
