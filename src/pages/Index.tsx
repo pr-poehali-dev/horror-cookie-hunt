@@ -143,6 +143,47 @@ const Index = () => {
       console.log('Audio not supported');
     }
   };
+  
+  const playScreamerSound = () => {
+    if (volume === 0) return;
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator1 = audioContext.createOscillator();
+      const oscillator2 = audioContext.createOscillator();
+      const oscillator3 = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator1.type = 'sawtooth';
+      oscillator2.type = 'square';
+      oscillator3.type = 'triangle';
+      
+      const baseFreq = 40;
+      oscillator1.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
+      oscillator2.frequency.setValueAtTime(baseFreq * 1.5, audioContext.currentTime);
+      oscillator3.frequency.setValueAtTime(baseFreq * 2.5, audioContext.currentTime);
+      
+      oscillator1.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.4);
+      oscillator2.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.4);
+      oscillator3.frequency.exponentialRampToValueAtTime(2000, audioContext.currentTime + 0.4);
+
+      gainNode.gain.setValueAtTime(volume / 100, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+
+      oscillator1.connect(gainNode);
+      oscillator2.connect(gainNode);
+      oscillator3.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator1.start(audioContext.currentTime);
+      oscillator2.start(audioContext.currentTime + 0.1);
+      oscillator3.start(audioContext.currentTime + 0.2);
+      oscillator1.stop(audioContext.currentTime + 1.5);
+      oscillator2.stop(audioContext.currentTime + 1.5);
+      oscillator3.stop(audioContext.currentTime + 1.5);
+    } catch (e) {
+      console.log('Screamer sound not supported');
+    }
+  };
 
   const leaderboard: LeaderboardEntry[] = [
     { rank: 1, name: 'LILY', score: 9999 },
@@ -218,7 +259,7 @@ const Index = () => {
 
         if (newX === playerPos.x && newY === playerPos.y) {
           setShowScreamer(true);
-          playSound(50, 1.5, 'sawtooth');
+          playScreamerSound();
           setScreenShake(true);
           
           setTimeout(() => {
@@ -230,7 +271,7 @@ const Index = () => {
               description: `Твой счёт: ${score}`,
               variant: 'destructive'
             });
-          }, 1500);
+          }, 2000);
         }
 
         return { x: newX, y: newY };
@@ -693,18 +734,18 @@ const Index = () => {
       {gameState === 'leaderboard' && renderLeaderboard()}
       
       {showScreamer && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black animate-shake">
-          <div className="absolute inset-0 bg-red-950 animate-pulse-glow opacity-50"></div>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black">
+          <div className="absolute inset-0 bg-red-950 animate-pulse opacity-40"></div>
           <img 
-            src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
+            src="https://cdn.poehali.dev/files/33a04cee-85c3-44c4-8afe-03bece380284.png" 
             alt="Screamer"
-            className="w-full h-full object-cover game-container animate-scale-screamer"
+            className="w-full h-full object-cover animate-scale-screamer"
             style={{
-              animation: 'scale-screamer 1.5s ease-out',
-              filter: 'contrast(1.5) brightness(1.2)'
+              animation: 'scale-screamer 2s ease-out, screamer-shake 0.08s infinite',
+              filter: 'contrast(1.8) brightness(1.4) saturate(0.7)'
             }}
           />
-          <div className="absolute inset-0 bg-gradient-radial from-transparent to-black opacity-30"></div>
+          <div className="absolute inset-0 bg-gradient-radial from-red-900/20 via-transparent to-black/60"></div>
         </div>
       )}
     </>
