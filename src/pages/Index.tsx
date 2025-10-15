@@ -33,6 +33,8 @@ const Index = () => {
   const [mapProgress, setMapProgress] = useState(15);
   const [volume, setVolume] = useState(50);
   const [screenShake, setScreenShake] = useState(false);
+  const [showScreamer, setShowScreamer] = useState(false);
+  const [exitPos] = useState({ x: gridSize - 2, y: gridSize - 2 });
   const { toast } = useToast();
 
   const gridSize = 10;
@@ -61,6 +63,18 @@ const Index = () => {
       setScore(prev => prev + 10);
       playSound(200, 0.05, 'square');
       
+      if (newX === exitPos.x && newY === exitPos.y) {
+        playSound(400, 0.5, 'sine');
+        toast({
+          title: '✅ ПОБЕДА!',
+          description: `Лили сбежала! Счёт: ${score + 1000}`,
+        });
+        setTimeout(() => {
+          setGameState('leaderboard');
+        }, 1500);
+        return;
+      }
+      
       const distance = Math.abs(newX - saltPos.x) + Math.abs(newY - saltPos.y);
       if (distance < 3) {
         setFear(prev => Math.min(100, prev + 10));
@@ -69,7 +83,7 @@ const Index = () => {
         setTimeout(() => setScreenShake(false), 300);
         toast({
           title: '⚠️ СОЛЬ БЛИЗКО',
-          description: 'Беги, Лили!',
+          description: 'Беги к выходу!',
           variant: 'destructive'
         });
       } else if (distance < 5) {
@@ -153,22 +167,20 @@ const Index = () => {
         }
 
         if (newX === playerPos.x && newY === playerPos.y) {
-          playSound(50, 0.5, 'sawtooth');
+          setShowScreamer(true);
+          playSound(50, 1.5, 'sawtooth');
           setScreenShake(true);
-          setTimeout(() => setScreenShake(false), 500);
-          setHealth(h => {
-            const newHealth = h - 20;
-            if (newHealth <= 0) {
-              playSound(30, 1, 'sine');
-              setGameState('menu');
-              toast({
-                title: '💀 КОНЕЦ ИГРЫ',
-                description: `Твой счёт: ${score}`,
-                variant: 'destructive'
-              });
-            }
-            return Math.max(0, newHealth);
-          });
+          
+          setTimeout(() => {
+            setShowScreamer(false);
+            setScreenShake(false);
+            setGameState('menu');
+            toast({
+              title: '💀 СОЛЬ ПОЙМАЛА ЛИЛИ',
+              description: `Твой счёт: ${score}`,
+              variant: 'destructive'
+            });
+          }, 1500);
         }
 
         return { x: newX, y: newY };
@@ -216,8 +228,9 @@ const Index = () => {
               const y = Math.floor(index / gridSize);
               const isPlayer = x === playerPos.x && y === playerPos.y;
               const isSalt = x === saltPos.x && y === saltPos.y;
+              const isExit = x === exitPos.x && y === exitPos.y;
               const isWall = (x === 0 || x === gridSize - 1 || y === 0 || y === gridSize - 1) && 
-                            !(x === 1 && y === 1) && !(x === gridSize - 2 && y === gridSize - 2);
+                            !(x === 1 && y === 1) && !isExit;
 
               return (
                 <div
@@ -225,6 +238,7 @@ const Index = () => {
                   className={`aspect-square flex items-center justify-center text-xl border border-gray-900 transition-all relative overflow-hidden ${
                     isPlayer ? 'bg-gradient-to-br from-gray-800 to-gray-900 animate-pulse-glow' :
                     isSalt ? 'bg-black animate-shake border-red-900' :
+                    isExit ? 'bg-gradient-to-br from-green-950 to-green-900 border-green-800 animate-pulse-glow' :
                     isWall ? 'bg-gray-950' :
                     'bg-black/80'
                   }`}
@@ -242,6 +256,9 @@ const Index = () => {
                       alt="Salt"
                       className="w-full h-full object-cover game-container opacity-90 scale-150"
                     />
+                  )}
+                  {isExit && !isPlayer && (
+                    <div className="text-3xl">🚻</div>
                   )}
                 </div>
               );
@@ -327,9 +344,10 @@ const Index = () => {
         <div className="text-center space-y-8">
           <div className="space-y-4">
             <h1 className="text-2xl blood-text animate-pulse-glow">COOKIE RUN</h1>
-            <h2 className="text-lg text-gray-400">Катакомбы Тишины</h2>
+            <h2 className="text-lg text-gray-400">ПОБЕГ ИЗ КАТАКОМБ</h2>
             <p className="text-xs text-gray-600 leading-relaxed">
-              Соль преследует Лили в катакомбах...
+              Помоги Лили сбежать от Соли...<br/>
+              Доберись до выхода 🚻
             </p>
           </div>
 
@@ -578,6 +596,22 @@ const Index = () => {
       {gameState === 'map' && renderMap()}
       {gameState === 'inventory' && renderInventory()}
       {gameState === 'leaderboard' && renderLeaderboard()}
+      
+      {showScreamer && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black animate-shake">
+          <div className="absolute inset-0 bg-red-950 animate-pulse-glow opacity-50"></div>
+          <img 
+            src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
+            alt="Screamer"
+            className="w-full h-full object-cover game-container animate-scale-screamer"
+            style={{
+              animation: 'scale-screamer 1.5s ease-out',
+              filter: 'contrast(1.5) brightness(1.2)'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-radial from-transparent to-black opacity-30"></div>
+        </div>
+      )}
     </>
   );
 };
