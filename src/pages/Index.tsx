@@ -34,6 +34,8 @@ const Index = () => {
   const [volume, setVolume] = useState(50);
   const [screenShake, setScreenShake] = useState(false);
   const [showScreamer, setShowScreamer] = useState(false);
+  const [flashlightCharges, setFlashlightCharges] = useState(3);
+  const [flashlightActive, setFlashlightActive] = useState(false);
   const { toast } = useToast();
 
   const gridSize = 10;
@@ -52,6 +54,24 @@ const Index = () => {
   
   const isObstacle = (x: number, y: number) => 
     obstacles.some(obs => obs.x === x && obs.y === y);
+  
+  const useFlashlight = () => {
+    if (flashlightCharges <= 0 || flashlightActive) return;
+    
+    setFlashlightCharges(prev => prev - 1);
+    setFlashlightActive(true);
+    playSound(300, 0.1, 'sine');
+    
+    toast({
+      title: '🔦 Фонарик активирован',
+      description: `Осталось зарядов: ${flashlightCharges - 1}`,
+    });
+    
+    setTimeout(() => {
+      setFlashlightActive(false);
+      playSound(200, 0.1, 'sine');
+    }, 3000);
+  };
 
   const movePlayer = (direction: 'up' | 'down' | 'left' | 'right') => {
     let newX = playerPos.x;
@@ -156,9 +176,16 @@ const Index = () => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [gameState, playerPos, saltPos, toast]);
+    const handleKeyPressWithFlashlight = (e: KeyboardEvent) => {
+      handleKeyPress(e);
+      if (e.key === 'f' || e.key === 'F' || e.key === 'а' || e.key === 'А') {
+        useFlashlight();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPressWithFlashlight);
+    return () => window.removeEventListener('keydown', handleKeyPressWithFlashlight);
+  }, [gameState, playerPos, saltPos, flashlightCharges, flashlightActive, toast]);
 
   useEffect(() => {
     if (gameState !== 'playing') return;
@@ -252,7 +279,12 @@ const Index = () => {
             <div className="text-xs mb-1 text-red-600">СТРАХ: {fear}</div>
             <Progress value={fear} className="h-3 bg-black border border-red-900" />
           </div>
-          <div className="text-sm text-gray-400">СЧЁТ: {score}</div>
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-yellow-400 flex items-center gap-1">
+              🔦 x{flashlightCharges}
+            </div>
+            <div className="text-sm text-gray-400">СЧЁТ: {score}</div>
+          </div>
         </div>
 
         <Card className="p-4 bg-black border-4 border-gray-800 shadow-pixel-lg darkness-pulse relative overflow-hidden">
@@ -262,7 +294,10 @@ const Index = () => {
               const x = index % gridSize;
               const y = Math.floor(index / gridSize);
               const isPlayer = x === playerPos.x && y === playerPos.y;
+              const isSalt = x === saltPos.x && y === saltPos.y;
               const isExit = x === exitPos.x && y === exitPos.y;
+              const distanceToPlayer = Math.abs(x - playerPos.x) + Math.abs(y - playerPos.y);
+              const inFlashlightRange = flashlightActive && distanceToPlayer <= 4;
               const isObstacleCell = isObstacle(x, y);
               const isWall = (x === 0 || x === gridSize - 1 || y === 0 || y === gridSize - 1) && 
                             !(x === 1 && y === 1) && !isExit;
@@ -272,17 +307,34 @@ const Index = () => {
                   key={index}
                   className={`aspect-square flex items-center justify-center text-xl border border-gray-900 transition-all relative overflow-hidden ${
                     isPlayer ? 'bg-gradient-to-br from-gray-800 to-gray-900 animate-pulse-glow' :
+                    isSalt && inFlashlightRange ? 'bg-red-950 animate-pulse-glow border-red-800' :
                     isExit ? 'bg-gradient-to-br from-green-950 to-green-900 border-green-800 animate-pulse-glow' :
                     isObstacleCell ? 'bg-gray-900 border-gray-700' :
                     isWall ? 'bg-gray-950' :
+                    inFlashlightRange ? 'bg-black/60' :
                     'bg-black/80'
                   }`}
+                  style={{
+                    boxShadow: inFlashlightRange ? '0 0 20px rgba(255, 215, 0, 0.3)' : 'none'
+                  }}
                 >
                   {isPlayer && (
+                    <>
+                      <img 
+                        src="https://cdn.poehali.dev/files/6afce6d7-3c24-430b-9d4f-3d2c1b8829a2.png" 
+                        alt="Lily"
+                        className="w-full h-full object-contain game-container scale-125"
+                      />
+                      {flashlightActive && (
+                        <div className="absolute inset-0 bg-yellow-400/20 animate-pulse-glow"></div>
+                      )}
+                    </>
+                  )}
+                  {isSalt && inFlashlightRange && (
                     <img 
-                      src="https://cdn.poehali.dev/files/6afce6d7-3c24-430b-9d4f-3d2c1b8829a2.png" 
-                      alt="Lily"
-                      className="w-full h-full object-contain game-container scale-125"
+                      src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
+                      alt="Salt"
+                      className="w-full h-full object-cover game-container opacity-90 scale-150 animate-pulse-glow"
                     />
                   )}
                   {isExit && !isPlayer && (
@@ -301,6 +353,16 @@ const Index = () => {
           <Button onClick={() => { playSound(220, 0.05, 'square'); setGameState('menu'); }} variant="outline" size="sm">
             <Icon name="Home" className="mr-2 h-4 w-4" />
             МЕНЮ
+          </Button>
+          <Button 
+            onClick={useFlashlight}
+            variant="outline" 
+            size="sm"
+            disabled={flashlightCharges <= 0 || flashlightActive}
+            className={flashlightActive ? 'bg-yellow-600 text-black' : ''}
+          >
+            <Icon name="Flashlight" className="mr-2 h-4 w-4" />
+            ФОНАРИК (F)
           </Button>
           <Button onClick={() => { playSound(220, 0.05, 'square'); setGameState('map'); }} variant="outline" size="sm">
             <Icon name="Map" className="mr-2 h-4 w-4" />
@@ -351,8 +413,8 @@ const Index = () => {
         </div>
 
         <div className="text-center text-xs text-gray-600">
-          <span className="hidden md:inline">Используй WASD или стрелки для движения</span>
-          <span className="md:hidden">Используй кнопки для управления</span>
+          <span className="hidden md:inline">Используй WASD или стрелки для движения • F для фонарика</span>
+          <span className="md:hidden">Используй кнопки для управления и фонарика</span>
         </div>
       </div>
     </div>
@@ -392,6 +454,8 @@ const Index = () => {
                 setScore(0);
                 setPlayerPos({ x: 1, y: 1 });
                 setSaltPos({ x: 8, y: 8 });
+                setFlashlightCharges(3);
+                setFlashlightActive(false);
               }}
               className="w-full bg-gray-900 text-gray-300 hover:bg-gray-800 shadow-pixel border-2 border-gray-700"
               size="lg"
