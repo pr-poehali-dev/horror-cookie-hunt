@@ -210,7 +210,13 @@ const Index = () => {
                     'bg-background/50'
                   }`}
                 >
-                  {isPlayer && <span className="text-2xl">🌸</span>}
+                  {isPlayer && (
+                    <img 
+                      src="https://cdn.poehali.dev/files/6afce6d7-3c24-430b-9d4f-3d2c1b8829a2.png" 
+                      alt="Lily"
+                      className="w-full h-full object-contain game-container scale-125"
+                    />
+                  )}
                   {isSalt && (
                     <img 
                       src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
@@ -370,7 +376,13 @@ const Index = () => {
               <div className="absolute inset-0 grid grid-cols-5 grid-rows-5 p-4">
                 {Array.from({ length: 25 }).map((_, i) => (
                   <div key={i} className="border border-muted/50 flex items-center justify-center text-xs relative">
-                    {i === 0 && <span>🌸</span>}
+                    {i === 0 && (
+                      <img 
+                        src="https://cdn.poehali.dev/files/6afce6d7-3c24-430b-9d4f-3d2c1b8829a2.png" 
+                        alt="Lily"
+                        className="w-full h-full object-contain game-container"
+                      />
+                    )}
                     {i === 24 && (
                       <img 
                         src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
@@ -386,14 +398,18 @@ const Index = () => {
 
             <div className="text-xs text-muted-foreground space-y-1">
               <div className="flex items-center gap-2">
-                <span>🌸</span>
-                <span>- Твоя позиция</span>
+                <img 
+                  src="https://cdn.poehali.dev/files/6afce6d7-3c24-430b-9d4f-3d2c1b8829a2.png" 
+                  alt="Lily"
+                  className="w-6 h-6 object-contain game-container"
+                />
+                <span>- Твоя позиция (Лили)</span>
               </div>
               <div className="flex items-center gap-2">
                 <img 
                   src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
                   alt="Salt"
-                  className="w-4 h-4 object-contain game-container"
+                  className="w-6 h-6 object-contain game-container"
                 />
                 <span>- Соль</span>
               </div>
