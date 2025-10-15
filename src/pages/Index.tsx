@@ -32,9 +32,31 @@ const Index = () => {
   ]);
   const [mapProgress, setMapProgress] = useState(15);
   const [volume, setVolume] = useState(50);
+  const [screenShake, setScreenShake] = useState(false);
   const { toast } = useToast();
 
   const gridSize = 10;
+
+  const playSound = (frequency: number, duration: number, type: OscillatorType = 'sine') => {
+    if (volume === 0) return;
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.type = type;
+      oscillator.frequency.value = frequency;
+      gainNode.gain.value = volume / 200;
+      
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + duration);
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
 
   const leaderboard: LeaderboardEntry[] = [
     { rank: 1, name: 'LILY', score: 9999 },
@@ -73,15 +95,21 @@ const Index = () => {
       if (newX !== playerPos.x || newY !== playerPos.y) {
         setPlayerPos({ x: newX, y: newY });
         setScore(prev => prev + 10);
+        playSound(200, 0.05, 'square');
         
         const distance = Math.abs(newX - saltPos.x) + Math.abs(newY - saltPos.y);
         if (distance < 3) {
           setFear(prev => Math.min(100, prev + 10));
+          playSound(100, 0.3, 'sawtooth');
+          setScreenShake(true);
+          setTimeout(() => setScreenShake(false), 300);
           toast({
             title: '⚠️ СОЛЬ БЛИЗКО',
             description: 'Беги, Лили!',
             variant: 'destructive'
           });
+        } else if (distance < 5) {
+          playSound(150, 0.1, 'triangle');
         }
       }
     };
@@ -108,9 +136,13 @@ const Index = () => {
         }
 
         if (newX === playerPos.x && newY === playerPos.y) {
+          playSound(50, 0.5, 'sawtooth');
+          setScreenShake(true);
+          setTimeout(() => setScreenShake(false), 500);
           setHealth(h => {
             const newHealth = h - 20;
             if (newHealth <= 0) {
+              playSound(30, 1, 'sine');
               setGameState('menu');
               toast({
                 title: '💀 КОНЕЦ ИГРЫ',
@@ -129,8 +161,22 @@ const Index = () => {
     return () => clearInterval(saltMoveInterval);
   }, [gameState, playerPos, fear, score, toast]);
 
+  useEffect(() => {
+    if (gameState !== 'playing') return;
+    
+    const distance = Math.abs(playerPos.x - saltPos.x) + Math.abs(playerPos.y - saltPos.y);
+    if (distance < 3 && distance > 0) {
+      const pulseInterval = setInterval(() => {
+        playSound(80 + Math.random() * 40, 0.1, 'sine');
+      }, 2000 - distance * 500);
+      return () => clearInterval(pulseInterval);
+    }
+  }, [gameState, playerPos, saltPos]);
+
   const renderGame = () => (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <div className={`min-h-screen bg-background flex flex-col items-center justify-center p-4 transition-transform ${
+      screenShake ? 'animate-shake' : ''
+    }`}>
       <div className="w-full max-w-4xl space-y-4">
         <div className="flex justify-between items-center gap-4">
           <div className="flex-1">
@@ -179,15 +225,15 @@ const Index = () => {
         </Card>
 
         <div className="flex gap-2 justify-center flex-wrap">
-          <Button onClick={() => setGameState('menu')} variant="outline" size="sm">
+          <Button onClick={() => { playSound(220, 0.05, 'square'); setGameState('menu'); }} variant="outline" size="sm">
             <Icon name="Home" className="mr-2 h-4 w-4" />
             МЕНЮ
           </Button>
-          <Button onClick={() => setGameState('map')} variant="outline" size="sm">
+          <Button onClick={() => { playSound(220, 0.05, 'square'); setGameState('map'); }} variant="outline" size="sm">
             <Icon name="Map" className="mr-2 h-4 w-4" />
             КАРТА
           </Button>
-          <Button onClick={() => setGameState('inventory')} variant="outline" size="sm">
+          <Button onClick={() => { playSound(220, 0.05, 'square'); setGameState('inventory'); }} variant="outline" size="sm">
             <Icon name="Backpack" className="mr-2 h-4 w-4" />
             ИНВЕНТАРЬ
           </Button>
@@ -225,6 +271,7 @@ const Index = () => {
           <div className="space-y-3">
             <Button 
               onClick={() => {
+                playSound(300, 0.1, 'square');
                 setGameState('playing');
                 setHealth(100);
                 setFear(0);
@@ -239,7 +286,10 @@ const Index = () => {
             </Button>
 
             <Button 
-              onClick={() => setGameState('settings')}
+              onClick={() => {
+                playSound(250, 0.08, 'square');
+                setGameState('settings');
+              }}
               variant="outline"
               className="w-full"
               size="lg"
@@ -248,7 +298,10 @@ const Index = () => {
             </Button>
 
             <Button 
-              onClick={() => setGameState('leaderboard')}
+              onClick={() => {
+                playSound(250, 0.08, 'square');
+                setGameState('leaderboard');
+              }}
               variant="outline"
               className="w-full"
               size="lg"
