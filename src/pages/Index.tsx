@@ -97,16 +97,7 @@ const Index = () => {
       const distance = Math.abs(newX - saltPos.x) + Math.abs(newY - saltPos.y);
       if (distance < 3) {
         setFear(prev => Math.min(100, prev + 15));
-        playSound(100, 0.3, 'sawtooth');
-        setScreenShake(true);
-        setTimeout(() => setScreenShake(false), 300);
-        toast({
-          title: '⚠️ СОЛЬ БЛИЗКО',
-          description: 'Беги к выходу внизу карты!',
-          variant: 'destructive'
-        });
       } else if (distance < 5) {
-        playSound(150, 0.1, 'triangle');
         setFear(prev => Math.min(100, prev + 5));
       }
     }
@@ -226,13 +217,25 @@ const Index = () => {
     if (gameState !== 'playing') return;
     
     const distance = Math.abs(playerPos.x - saltPos.x) + Math.abs(playerPos.y - saltPos.y);
-    if (distance < 3 && distance > 0) {
+    const maxDistance = 8;
+    
+    if (distance <= maxDistance && distance > 0) {
+      const intensity = 1 - (distance / maxDistance);
+      const baseFrequency = 60;
+      const frequencyRange = 100;
+      const frequency = baseFrequency + (intensity * frequencyRange);
+      const intervalTime = Math.max(100, 1000 - (intensity * 800));
+      const soundDuration = 0.05 + (intensity * 0.2);
+      
       const pulseInterval = setInterval(() => {
-        playSound(80 + Math.random() * 40, 0.1, 'sine');
-      }, 2000 - distance * 500);
+        if (volume > 0) {
+          playSound(frequency + Math.random() * 20, soundDuration, 'sawtooth');
+        }
+      }, intervalTime);
+      
       return () => clearInterval(pulseInterval);
     }
-  }, [gameState, playerPos, saltPos]);
+  }, [gameState, playerPos, saltPos, volume]);
 
   const renderGame = () => (
     <div className={`min-h-screen bg-black flex flex-col items-center justify-center p-4 transition-transform horror-vignette relative ${
@@ -259,7 +262,6 @@ const Index = () => {
               const x = index % gridSize;
               const y = Math.floor(index / gridSize);
               const isPlayer = x === playerPos.x && y === playerPos.y;
-              const isSalt = x === saltPos.x && y === saltPos.y;
               const isExit = x === exitPos.x && y === exitPos.y;
               const isObstacleCell = isObstacle(x, y);
               const isWall = (x === 0 || x === gridSize - 1 || y === 0 || y === gridSize - 1) && 
@@ -270,7 +272,6 @@ const Index = () => {
                   key={index}
                   className={`aspect-square flex items-center justify-center text-xl border border-gray-900 transition-all relative overflow-hidden ${
                     isPlayer ? 'bg-gradient-to-br from-gray-800 to-gray-900 animate-pulse-glow' :
-                    isSalt ? 'bg-black animate-shake border-red-900' :
                     isExit ? 'bg-gradient-to-br from-green-950 to-green-900 border-green-800 animate-pulse-glow' :
                     isObstacleCell ? 'bg-gray-900 border-gray-700' :
                     isWall ? 'bg-gray-950' :
@@ -282,13 +283,6 @@ const Index = () => {
                       src="https://cdn.poehali.dev/files/6afce6d7-3c24-430b-9d4f-3d2c1b8829a2.png" 
                       alt="Lily"
                       className="w-full h-full object-contain game-container scale-125"
-                    />
-                  )}
-                  {isSalt && (
-                    <img 
-                      src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
-                      alt="Salt"
-                      className="w-full h-full object-cover game-container opacity-90 scale-150"
                     />
                   )}
                   {isExit && !isPlayer && (
