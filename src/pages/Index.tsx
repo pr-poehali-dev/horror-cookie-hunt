@@ -34,10 +34,10 @@ const Index = () => {
   const [volume, setVolume] = useState(50);
   const [screenShake, setScreenShake] = useState(false);
   const [showScreamer, setShowScreamer] = useState(false);
-  const [exitPos] = useState({ x: gridSize - 2, y: gridSize - 2 });
   const { toast } = useToast();
 
   const gridSize = 10;
+  const [exitPos] = useState({ x: gridSize - 2, y: gridSize - 2 });
 
   const movePlayer = (direction: 'up' | 'down' | 'left' | 'right') => {
     let newX = playerPos.x;
