@@ -37,7 +37,7 @@ const Index = () => {
   const { toast } = useToast();
 
   const gridSize = 10;
-  const [exitPos] = useState({ x: gridSize - 2, y: gridSize - 2 });
+  const [exitPos] = useState({ x: Math.floor(gridSize / 2), y: gridSize - 1 });
 
   const movePlayer = (direction: 'up' | 'down' | 'left' | 'right') => {
     let newX = playerPos.x;
@@ -77,17 +77,18 @@ const Index = () => {
       
       const distance = Math.abs(newX - saltPos.x) + Math.abs(newY - saltPos.y);
       if (distance < 3) {
-        setFear(prev => Math.min(100, prev + 10));
+        setFear(prev => Math.min(100, prev + 15));
         playSound(100, 0.3, 'sawtooth');
         setScreenShake(true);
         setTimeout(() => setScreenShake(false), 300);
         toast({
           title: '⚠️ СОЛЬ БЛИЗКО',
-          description: 'Беги к выходу!',
+          description: 'Беги к выходу внизу карты!',
           variant: 'destructive'
         });
       } else if (distance < 5) {
         playSound(150, 0.1, 'triangle');
+        setFear(prev => Math.min(100, prev + 5));
       }
     }
   };
@@ -150,7 +151,7 @@ const Index = () => {
   }, [gameState, playerPos, saltPos, toast]);
 
   useEffect(() => {
-    if (gameState !== 'playing' || fear < 50) return;
+    if (gameState !== 'playing') return;
 
     const saltMoveInterval = setInterval(() => {
       setSaltPos(prev => {
@@ -185,10 +186,10 @@ const Index = () => {
 
         return { x: newX, y: newY };
       });
-    }, 1000);
+    }, 300);
 
     return () => clearInterval(saltMoveInterval);
-  }, [gameState, playerPos, fear, score, toast]);
+  }, [gameState, playerPos, score, toast]);
 
   useEffect(() => {
     if (gameState !== 'playing') return;
