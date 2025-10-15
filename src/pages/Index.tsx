@@ -157,15 +157,21 @@ const Index = () => {
               return (
                 <div
                   key={index}
-                  className={`aspect-square flex items-center justify-center text-xl border border-muted/30 transition-all ${
+                  className={`aspect-square flex items-center justify-center text-xl border border-muted/30 transition-all relative overflow-hidden ${
                     isPlayer ? 'bg-secondary animate-pulse-glow' :
-                    isSalt ? 'bg-destructive animate-shake' :
+                    isSalt ? 'bg-black/90 animate-shake' :
                     isWall ? 'bg-muted' :
                     'bg-background/50'
                   }`}
                 >
-                  {isPlayer && '🌸'}
-                  {isSalt && '🧂'}
+                  {isPlayer && <span className="text-2xl">🌸</span>}
+                  {isSalt && (
+                    <img 
+                      src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
+                      alt="Salt"
+                      className="w-full h-full object-cover game-container opacity-90 scale-150"
+                    />
+                  )}
                 </div>
               );
             })}
@@ -198,7 +204,11 @@ const Index = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 left-10 text-8xl animate-pulse-glow">🏚️</div>
-        <div className="absolute bottom-10 right-10 text-8xl animate-pulse-glow">🧂</div>
+        <img 
+          src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
+          alt="Salt"
+          className="absolute bottom-10 right-10 w-32 h-32 object-contain animate-pulse-glow game-container"
+        />
         <div className="absolute top-1/2 left-1/4 text-6xl animate-pulse-glow">💀</div>
       </div>
 
@@ -306,19 +316,38 @@ const Index = () => {
             <div className="aspect-square bg-muted/30 border-2 border-primary p-4 relative">
               <div className="absolute inset-0 grid grid-cols-5 grid-rows-5 p-4">
                 {Array.from({ length: 25 }).map((_, i) => (
-                  <div key={i} className="border border-muted/50 flex items-center justify-center text-xs">
-                    {i === 0 && '🌸'}
-                    {i === 24 && '🧂'}
-                    {i === 12 && '🔑'}
+                  <div key={i} className="border border-muted/50 flex items-center justify-center text-xs relative">
+                    {i === 0 && <span>🌸</span>}
+                    {i === 24 && (
+                      <img 
+                        src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
+                        alt="Salt"
+                        className="w-full h-full object-cover game-container opacity-80"
+                      />
+                    )}
+                    {i === 12 && <span>🔑</span>}
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="text-xs text-muted-foreground space-y-1">
-              <div>🌸 - Твоя позиция</div>
-              <div>🧂 - Соль</div>
-              <div>🔑 - Предметы</div>
+              <div className="flex items-center gap-2">
+                <span>🌸</span>
+                <span>- Твоя позиция</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <img 
+                  src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
+                  alt="Salt"
+                  className="w-4 h-4 object-contain game-container"
+                />
+                <span>- Соль</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>🔑</span>
+                <span>- Предметы</span>
+              </div>
             </div>
           </div>
 
