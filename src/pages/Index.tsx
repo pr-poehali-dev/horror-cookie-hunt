@@ -174,23 +174,25 @@ const Index = () => {
   }, [gameState, playerPos, saltPos]);
 
   const renderGame = () => (
-    <div className={`min-h-screen bg-background flex flex-col items-center justify-center p-4 transition-transform ${
+    <div className={`min-h-screen bg-black flex flex-col items-center justify-center p-4 transition-transform horror-vignette relative ${
       screenShake ? 'animate-shake' : ''
     }`}>
-      <div className="w-full max-w-4xl space-y-4">
-        <div className="flex justify-between items-center gap-4">
+      <div className="fog-overlay"></div>
+      <div className="w-full max-w-4xl space-y-4 relative z-10">
+        <div className="flex justify-between items-center gap-4 bg-black/60 p-3 border border-muted/30">
           <div className="flex-1">
-            <div className="text-xs mb-1 text-primary">HP: {health}</div>
-            <Progress value={health} className="h-3 bg-muted" />
+            <div className="text-xs mb-1 text-red-700">HP: {health}</div>
+            <Progress value={health} className="h-3 bg-black border border-red-900" />
           </div>
           <div className="flex-1">
-            <div className="text-xs mb-1 text-destructive">СТРАХ: {fear}</div>
-            <Progress value={fear} className="h-3 bg-muted" />
+            <div className="text-xs mb-1 text-red-600">СТРАХ: {fear}</div>
+            <Progress value={fear} className="h-3 bg-black border border-red-900" />
           </div>
-          <div className="text-sm">СЧЁТ: {score}</div>
+          <div className="text-sm text-gray-400">СЧЁТ: {score}</div>
         </div>
 
-        <Card className="p-4 bg-card border-4 border-primary shadow-pixel">
+        <Card className="p-4 bg-black border-4 border-gray-800 shadow-pixel-lg darkness-pulse relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/40 pointer-events-none"></div>
           <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}>
             {Array.from({ length: gridSize * gridSize }).map((_, index) => {
               const x = index % gridSize;
@@ -203,11 +205,11 @@ const Index = () => {
               return (
                 <div
                   key={index}
-                  className={`aspect-square flex items-center justify-center text-xl border border-muted/30 transition-all relative overflow-hidden ${
-                    isPlayer ? 'bg-secondary animate-pulse-glow' :
-                    isSalt ? 'bg-black/90 animate-shake' :
-                    isWall ? 'bg-muted' :
-                    'bg-background/50'
+                  className={`aspect-square flex items-center justify-center text-xl border border-gray-900 transition-all relative overflow-hidden ${
+                    isPlayer ? 'bg-gradient-to-br from-gray-800 to-gray-900 animate-pulse-glow' :
+                    isSalt ? 'bg-black animate-shake border-red-900' :
+                    isWall ? 'bg-gray-950' :
+                    'bg-black/80'
                   }`}
                 >
                   {isPlayer && (
@@ -253,23 +255,24 @@ const Index = () => {
   );
 
   const renderMenu = () => (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-10">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden horror-vignette">
+      <div className="fog-overlay"></div>
+      <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10 text-8xl animate-pulse-glow">🏚️</div>
         <img 
           src="https://cdn.poehali.dev/files/8bd237bd-0198-4104-a514-04564efdd62b.png" 
           alt="Salt"
-          className="absolute bottom-10 right-10 w-32 h-32 object-contain animate-pulse-glow game-container"
+          className="absolute bottom-10 right-10 w-32 h-32 object-contain animate-pulse-glow game-container opacity-50"
         />
         <div className="absolute top-1/2 left-1/4 text-6xl animate-pulse-glow">💀</div>
       </div>
 
-      <Card className="w-full max-w-md p-8 bg-card border-4 border-primary shadow-pixel-lg relative z-10 animate-fade-in">
+      <Card className="w-full max-w-md p-8 bg-black/90 border-4 border-gray-800 shadow-pixel-lg relative z-10 animate-fade-in backdrop-blur-sm">
         <div className="text-center space-y-8">
           <div className="space-y-4">
-            <h1 className="text-2xl text-primary animate-pulse-glow">COOKIE RUN</h1>
-            <h2 className="text-lg text-foreground">Катакомбы Тишины</h2>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <h1 className="text-2xl blood-text animate-pulse-glow">COOKIE RUN</h1>
+            <h2 className="text-lg text-gray-400">Катакомбы Тишины</h2>
+            <p className="text-xs text-gray-600 leading-relaxed">
               Соль преследует Лили в катакомбах...
             </p>
           </div>
@@ -285,7 +288,7 @@ const Index = () => {
                 setPlayerPos({ x: 1, y: 1 });
                 setSaltPos({ x: 8, y: 8 });
               }}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-pixel"
+              className="w-full bg-gray-900 text-gray-300 hover:bg-gray-800 shadow-pixel border-2 border-gray-700"
               size="lg"
             >
               НАЧАТЬ ИГРУ
@@ -321,10 +324,11 @@ const Index = () => {
   );
 
   const renderSettings = () => (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 bg-card border-4 border-primary shadow-pixel animate-fade-in">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 horror-vignette relative">
+      <div className="fog-overlay"></div>
+      <Card className="w-full max-w-md p-8 bg-black/90 border-4 border-gray-800 shadow-pixel animate-fade-in relative z-10">
         <div className="space-y-6">
-          <h2 className="text-xl text-center text-primary">НАСТРОЙКИ</h2>
+          <h2 className="text-xl text-center text-gray-400">НАСТРОЙКИ</h2>
 
           <div className="space-y-4">
             <div>
@@ -361,10 +365,11 @@ const Index = () => {
   );
 
   const renderMap = () => (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 bg-card border-4 border-primary shadow-pixel animate-fade-in">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 horror-vignette relative">
+      <div className="fog-overlay"></div>
+      <Card className="w-full max-w-md p-8 bg-black/90 border-4 border-gray-800 shadow-pixel animate-fade-in relative z-10">
         <div className="space-y-6">
-          <h2 className="text-xl text-center text-primary">КАРТА КАТАКОМБ</h2>
+          <h2 className="text-xl text-center blood-text">КАРТА КАТАКОМБ</h2>
 
           <div className="space-y-4">
             <div>
@@ -372,7 +377,7 @@ const Index = () => {
               <Progress value={mapProgress} className="h-4" />
             </div>
 
-            <div className="aspect-square bg-muted/30 border-2 border-primary p-4 relative">
+            <div className="aspect-square bg-black border-2 border-gray-800 p-4 relative darkness-pulse">
               <div className="absolute inset-0 grid grid-cols-5 grid-rows-5 p-4">
                 {Array.from({ length: 25 }).map((_, i) => (
                   <div key={i} className="border border-muted/50 flex items-center justify-center text-xs relative">
@@ -433,16 +438,17 @@ const Index = () => {
   );
 
   const renderInventory = () => (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 bg-card border-4 border-primary shadow-pixel animate-fade-in">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 horror-vignette relative">
+      <div className="fog-overlay"></div>
+      <Card className="w-full max-w-md p-8 bg-black/90 border-4 border-gray-800 shadow-pixel animate-fade-in relative z-10">
         <div className="space-y-6">
-          <h2 className="text-xl text-center text-primary">ИНВЕНТАРЬ</h2>
+          <h2 className="text-xl text-center text-gray-400">ИНВЕНТАРЬ</h2>
 
           <div className="grid grid-cols-4 gap-2">
             {inventory.map((item) => (
               <div 
                 key={item.id}
-                className="aspect-square border-2 border-primary bg-muted/30 flex flex-col items-center justify-center p-2 hover:bg-muted/50 transition-colors cursor-pointer"
+                className="aspect-square border-2 border-gray-700 bg-black/60 flex flex-col items-center justify-center p-2 hover:bg-gray-900 transition-colors cursor-pointer"
               >
                 <div className="text-2xl">{item.icon}</div>
                 <div className="text-[8px] mt-1 text-center">{item.name}</div>
@@ -451,7 +457,7 @@ const Index = () => {
             {Array.from({ length: 8 - inventory.length }).map((_, i) => (
               <div 
                 key={`empty-${i}`}
-                className="aspect-square border-2 border-muted bg-background/50"
+                className="aspect-square border-2 border-gray-800 bg-black/40"
               />
             ))}
           </div>
@@ -473,17 +479,18 @@ const Index = () => {
   );
 
   const renderLeaderboard = () => (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 bg-card border-4 border-primary shadow-pixel animate-fade-in">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 horror-vignette relative">
+      <div className="fog-overlay"></div>
+      <Card className="w-full max-w-md p-8 bg-black/90 border-4 border-gray-800 shadow-pixel animate-fade-in relative z-10">
         <div className="space-y-6">
-          <h2 className="text-xl text-center text-primary">ТАБЛИЦА РЕКОРДОВ</h2>
+          <h2 className="text-xl text-center blood-text">ТАБЛИЦА РЕКОРДОВ</h2>
 
           <div className="space-y-2">
             {leaderboard.map((entry) => (
               <div 
                 key={entry.rank}
                 className={`flex justify-between items-center p-3 border-2 ${
-                  entry.name === 'YOU' ? 'border-primary bg-primary/10' : 'border-muted bg-muted/20'
+                  entry.name === 'YOU' ? 'border-gray-700 bg-gray-900' : 'border-gray-800 bg-black/60'
                 }`}
               >
                 <div className="flex items-center gap-3">
